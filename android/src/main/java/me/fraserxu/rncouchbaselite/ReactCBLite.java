@@ -132,14 +132,14 @@ public class ReactCBLite extends ReactContextBaseJavaModule {
             String url;
             if (credentials != null) {
                 url = String.format(
-                        "http://%s:%s@localhost:%d/",
+                        "http://%s:%s@127.0.0.1:%d/",
                         credentials.getLogin(),
                         credentials.getPassword(),
                         listener.getListenPort()
                 );
             } else {
                 url = String.format(
-                        "http://localhost:%d/",
+                        "http://127.0.0.1:%d/",
                         listener.getListenPort()
                 );
             }
