@@ -170,12 +170,16 @@ public class ReactCBLite extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void stopListener() {
-        Log.i(TAG, "Stopping CBL listener on port " + listener.getListenPort());
-        listener.stop();
+        if (listener != null) {
+            Log.i(TAG, "Stopping CBL listener on port " + listener.getListenPort());
+            listener.stop();
+            listener = null;
+        }
     }
 
     @ReactMethod
     public void startListener() {
+        stopListener();
         if (listener == null) {
             listener = new LiteListener(manager, SUGGESTED_PORT, allowedCredentials);
             Log.i(TAG, "Starting CBL listener on port " + listener.getListenPort());
