@@ -303,10 +303,15 @@ manager.prototype = {
       var request = new XMLHttpRequest();
       var self = this;
       request.onload = (e) => {
-        var data = JSON.parse(request.responseText);
-        self.changesEventEmitter.emit(CHANGE_EVENT_TYPE, data);
-        params.since = data.last_seq;
-        poller(databaseUrl, databaseName, params);
+        try {
+          var data = JSON.parse(request.responseText);
+          self.changesEventEmitter.emit(CHANGE_EVENT_TYPE, data);
+          params.since = data.last_seq;
+        } catch (ex) {
+          console.log(ex)
+        }
+        if (request.responseText !== '')
+          poller(databaseUrl, databaseName, params);
       };
       request.open('GET', databaseUrl + databaseName + '/_changes' + this._encodeParams(params));
       request.setRequestHeader('Authorization', this.authHeader);
