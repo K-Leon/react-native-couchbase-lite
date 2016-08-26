@@ -38,7 +38,8 @@ RCT_EXPORT_METHOD(initWithAuth:(NSString*)username password:(NSString*)password 
         [dbmgr internalURL];
 
         int suggestedPort = 5984;
-
+        
+        [self stopListener];
         listener = [self createListener:suggestedPort withUsername:username withPassword:password withCBLManager: dbmgr];
 
         NSLog(@"Couchbase Lite listening on port <%@>", listener.URL.port);
