@@ -8,7 +8,7 @@
 
 #import "ReactCBLite.h"
 
-#import "RCTLog.h"
+#import <React/RCTLog.h>
 
 #import "CouchbaseLite/CouchbaseLite.h"
 #import "CouchbaseLiteListener/CouchbaseLiteListener.h"
