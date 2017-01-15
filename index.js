@@ -166,6 +166,11 @@ manager.prototype = {
 
     return this.makeRequest("GET", url, options);
   },
+  
+  allDocuments: function (options) {
+    var url = this.databaseUrl + this.databaseName + "/_all_docs;
+    return this.makeRequest("GET", url, options);
+  },
 
   /**
    * Create a new database document
