@@ -168,7 +168,7 @@ manager.prototype = {
   },
   
   allDocuments: function (options) {
-    var url = this.databaseUrl + this.databaseName + "/_all_docs;
+    var url = this.databaseUrl + this.databaseName + "/_all_docs";
     return this.makeRequest("GET", url, options);
   },
 
