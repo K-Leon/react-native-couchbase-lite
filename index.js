@@ -94,7 +94,9 @@ manager.prototype = {
    * @returns {*|promise}
    */
   purge: function (deletedDocumentId, revs) {
-    return this.makeRequest("POST", this.databaseUrl + "/_purge/", null, {deletedDocumentId: revs})
+    let req = {}
+    req[deletedDocumentId] = revs
+    return this.makeRequest("POST", this.databaseUrl + this.databaseName + "/_purge/", null, req)
   },
 
   /**
@@ -166,7 +168,7 @@ manager.prototype = {
 
     return this.makeRequest("GET", url, options);
   },
-  
+
   allDocuments: function (options) {
     var url = this.databaseUrl + this.databaseName + "/_all_docs";
     return this.makeRequest("GET", url, options);
@@ -399,7 +401,7 @@ manager.prototype = {
       settings.body = body;
     }
 
-    return this._makeRequest(settings, url, queryStringParameters, body)
+    return this._makeRequest(settings, url, queryStringParameters)
       .then((res) => {
         return res.json()
       });
