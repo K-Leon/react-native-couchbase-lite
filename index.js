@@ -430,6 +430,11 @@ manager.prototype = {
         }
       }
 
+      if (res.status == 500 && settings.method == 'PUT') {
+        console.Sentry.captureMessage('Save Document Failed')
+        console.Sentry.captureMessage(JSON.stringify(res))
+      }
+
       return res
     }).catch((err) => {
       console.log("cbl request failed, attempt: " + attemptNumber, err, settings, fullUrl);
