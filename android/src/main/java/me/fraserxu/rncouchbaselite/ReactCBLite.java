@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
+import com.couchbase.lite.Document;
 import com.couchbase.lite.Manager;
 import com.couchbase.lite.View;
 import com.couchbase.lite.android.AndroidContext;
@@ -18,10 +19,16 @@ import com.couchbase.lite.replicator.Replication;
 import com.couchbase.lite.util.Log;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableNativeMap;
 import com.facebook.react.bridge.WritableMap;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,8 +44,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static me.fraserxu.rncouchbaselite.ReactNativeJson.convertJsonToMap;
 
@@ -189,6 +200,41 @@ public class ReactCBLite extends ReactContextBaseJavaModule {
 
         listener.start();
     }
+
+    /**
+     * Puts a document in the database.
+     * @param database  String  Database name.
+     * @param docId     String  Document id.
+     * @param document  Object  Document params.
+     * @param promise   Promise Promise to be returned to the JavaScript engine.
+     */
+    @ReactMethod
+    public void putDocument (String database, String document, Promise promise) {
+        Log.e("COUCHBASE GOT DOC", " Start");
+        try {
+            Database cbDatabase = manager.getDatabase(database);
+            Document doc = cbDatabase.createDocument();
+
+            // 2. Construct the document from university object
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            // Ignore undeclared properties
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            Map<String, Object> docProps = objectMapper.readValue(document, new TypeReference<Map<String,Object>>(){});
+
+
+            doc.putProperties(docProps);
+            promise.resolve(doc.getId().toString());
+            Log.e("COUCHBASE FINISHED", doc.getId().toString());
+        } catch (CouchbaseLiteException e) {
+            Log.e("COUCHBASE COUCHBASE_ERROR", e.toString());
+            promise.reject("COUCHBASE_ERROR", e);
+        } catch (Exception e) {
+            Log.e("COUCHBASE NOT_OPENED", e.toString());
+            promise.reject("NOT_OPENED", e);
+        }
+    }
+
 
     @ReactMethod
     public void upload(String method, String authHeader, String sourceUri, String targetUri, String contentType, Callback callback) {

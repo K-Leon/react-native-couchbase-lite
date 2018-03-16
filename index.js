@@ -1,5 +1,5 @@
-var {NativeModules} = require('react-native');
-var ReactCBLite = NativeModules.ReactCBLite;
+var {NativeModules, Platform} = require('react-native');
+var ReactCBLite = NativeModules.ReactCBLite
 
 var base64 = require('base-64')
   , events = require('events');
@@ -185,7 +185,22 @@ manager.prototype = {
     if (id) {
       return this.makeRequest("PUT", this.databaseUrl + this.databaseName + "/" + id, null, jsonDocument);
     } else {
-      return this.makeRequest("POST", this.databaseUrl + this.databaseName, null, jsonDocument);
+      if (Platform.OS === 'android') {
+        return ReactCBLite.putDocument(this.databaseName, JSON.stringify(jsonDocument).toString()).then((res) => {
+          return {
+            ok: true,
+            id: res
+          }
+        }).catch ((ex) => {
+          console.log('Save Document Failed - Native Storing')
+          console.Sentry.captureMessage('Save Document Failed - Native Storing')
+          console.log(JSON.stringify(jsonDocument))
+          console.Sentry.captureException(ex)
+          return this.makeRequest("POST", this.databaseUrl + this.databaseName, null, jsonDocument)
+        })
+      } else {
+        return this.makeRequest("POST", this.databaseUrl + this.databaseName, null, jsonDocument)
+      }
     }
   },
 
@@ -320,6 +335,10 @@ manager.prototype = {
         if (request.responseText !== '')
           poller(databaseUrl, databaseName, params);
       };
+      request.onerror = (e) => {
+        console.show(e)
+        console.show(request.responseText)
+      }
       request.open('GET', databaseUrl + databaseName + '/_changes' + this._encodeParams(params));
       request.setRequestHeader('Authorization', this.authHeader);
       request.send();
@@ -382,7 +401,7 @@ manager.prototype = {
    * @param object data
    * @returns {*|promise}
    */
-  makeRequest: function (method, url, queryStringParameters, data) {
+  makeRequest: function (method, url, queryStringParameters, data, timeout = null) {
     var body;
     if (data) {
       body = JSON.stringify(data);
@@ -396,6 +415,9 @@ manager.prototype = {
         'Authorization': this.authHeader
       }
     };
+    if (timeout) {
+      settings.timeout = timeout
+    }
 
     if (data) {
       settings.body = body;
